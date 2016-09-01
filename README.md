@@ -15,7 +15,9 @@ Androguard is a full python tool to play with Android files.
 
 ##1. Authors: Androguard Team
 
-Androguard + tools: Anthony Desnos (desnos at t0t0.fr).
+Androguard + tools:
+* Anthony Desnos (desnos at t0t0.fr).
+* Sylvain Kanschine (skanschine at genymobile.com)
 
 DAD (DAD is A Decompiler): Geoffroy Gueguen (geoffroy dot gueguen at gmail dot com)
 
@@ -27,9 +29,6 @@ https://github.com/androguard/androguard/releases
 ##3. Licenses
 
 * Androguard
-
-Copyright (C) 2012 - 2016, Anthony Desnos (desnos at t0t0.fr)
-All rights reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -44,9 +43,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 * DAD
-
-Copyright (C) 2012 - 2016, Geoffroy Gueguen (geoffroy dot gueguen at gmail dot com)
-All rights reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
