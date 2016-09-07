@@ -609,6 +609,19 @@ class APK(object):
         """
         return self.get_elements("activity", "name")
 
+    def get_activities_by_category(self, category):
+        """
+            Return the android:name attribute of all activities contains the given category
+
+            :rtype: a list of string
+        """
+        activities = []
+        for activity in self.get_activities():
+            filters = self.get_intent_filters("activity", activity)
+            if 'category' in filters and category in filters['category']:
+                activities.append(activity)
+        return activities
+
     def get_services(self):
         """
             Return the android:name attribute of all services
