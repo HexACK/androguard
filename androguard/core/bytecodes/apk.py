@@ -15,6 +15,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from future.utils import bord
+
 from androguard.core import bytecode
 from androguard.core import androconf
 from androguard.core.bytecodes.dvm_permissions import DVM_PERMISSIONS
@@ -22,7 +24,7 @@ from androguard.util import read
 
 from androguard.core.resources import public
 
-import StringIO
+import io
 from struct import pack, unpack
 from xml.sax.saxutils import escape
 from zlib import crc32
@@ -188,10 +190,10 @@ class APK(object):
             self.zip = ChilkatZip(self.__raw)
         elif zipmodule == 2:
             from androguard.patch import zipfile
-            self.zip = zipfile.ZipFile(StringIO.StringIO(self.__raw), mode=mode)
+            self.zip = zipfile.ZipFile(io.BytesIO(self.__raw), mode=mode)
         else:
             import zipfile
-            self.zip = zipfile.ZipFile(StringIO.StringIO(self.__raw), mode=mode)
+            self.zip = zipfile.ZipFile(io.BytesIO(self.__raw), mode=mode)
 
         if not skip_analysis:
             for i in self.zip.namelist():
@@ -307,7 +309,7 @@ class APK(object):
                 app_name = res_parser.get_resolved_res_configs(
                     res_id,
                     ARSCResTableConfig.default_config())[0][1]
-            except Exception, e:
+            except Exception as e:
                 androconf.warning("Exception selecting app icon: %s", e)
                 app_name = ""
         return app_name
@@ -351,7 +353,7 @@ class APK(object):
                     if dpi <= max_dpi and dpi > current_dpi:
                         app_icon = file_name
                         current_dpi = dpi
-            except Exception, e:
+            except Exception as e:
                 androconf.warning("Exception selecting app icon: %s", e)
 
         return app_icon
@@ -914,56 +916,56 @@ class APK(object):
     def show(self):
         self.get_files_types()
 
-        print "FILES: "
+        print("FILES: ")
         for i in self.get_files():
             try:
-                print "\t", i, self.files[i], "%x" % self.files_crc32[i]
+                print("\t", i, self.files[i], "%x" % self.files_crc32[i])
             except KeyError:
-                print "\t", i, "%x" % self.files_crc32[i]
+                print("\t", i, "%x" % self.files_crc32[i])
 
-        print "DECLARED PERMISSIONS:"
+        print("DECLARED PERMISSIONS:")
         declared_permissions = self.get_declared_permissions()
         for i in declared_permissions:
-            print "\t", i
+            print("\t", i)
 
-        print "REQUESTED PERMISSIONS:"
+        print("REQUESTED PERMISSIONS:")
         requested_permissions = self.get_requested_permissions()
         for i in requested_permissions:
-            print "\t", i
+            print("\t", i)
 
-        print "MAIN ACTIVITY: ", self.get_main_activity()
+        print("MAIN ACTIVITY: ", self.get_main_activity())
 
-        print "ACTIVITIES: "
+        print("ACTIVITIES: ")
         activities = self.get_activities()
         for i in activities:
             filters = self.get_intent_filters("activity", i)
-            print "\t", i, filters or ""
+            print("\t", i, filters or "")
 
-        print "SERVICES: "
+        print("SERVICES: ")
         services = self.get_services()
         for i in services:
             filters = self.get_intent_filters("service", i)
-            print "\t", i, filters or ""
+            print("\t", i, filters or "")
 
-        print "RECEIVERS: "
+        print("RECEIVERS: ")
         receivers = self.get_receivers()
         for i in receivers:
             filters = self.get_intent_filters("receiver", i)
-            print "\t", i, filters or ""
+            print("\t", i, filters or "")
 
-        print "PROVIDERS: ", self.get_providers()
+        print("PROVIDERS: ", self.get_providers())
 
 
 def show_Certificate(cert):
-    print "Issuer: C=%s, CN=%s, DN=%s, E=%s, L=%s, O=%s, OU=%s, S=%s" % (
+    print("Issuer: C=%s, CN=%s, DN=%s, E=%s, L=%s, O=%s, OU=%s, S=%s" % (
         cert.issuerC(), cert.issuerCN(), cert.issuerDN(), cert.issuerE(),
-        cert.issuerL(), cert.issuerO(), cert.issuerOU(), cert.issuerS())
-    print "Subject: C=%s, CN=%s, DN=%s, E=%s, L=%s, O=%s, OU=%s, S=%s" % (
+        cert.issuerL(), cert.issuerO(), cert.issuerOU(), cert.issuerS()))
+    print("Subject: C=%s, CN=%s, DN=%s, E=%s, L=%s, O=%s, OU=%s, S=%s" % (
         cert.subjectC(), cert.subjectCN(), cert.subjectDN(), cert.subjectE(),
-        cert.subjectL(), cert.subjectO(), cert.subjectOU(), cert.subjectS())
+        cert.subjectL(), cert.subjectO(), cert.subjectOU(), cert.subjectS()))
 
 ################################## AXML FORMAT ########################################
-# Translated from 
+# Translated from
 # http://code.google.com/p/android4me/source/browse/src/android/content/res/AXmlResourceParser.java
 
 UTF8_FLAG = 0x00000100
@@ -1084,8 +1086,7 @@ class StringBlock(object):
         return string
 
     def decodeLength(self, offset, sizeof_char):
-        length = ord(self.m_charbuff[offset])
-
+        length = bord(self.m_charbuff[offset])
         sizeof_2chars = sizeof_char << 1
         fmt_chr = 'B' if sizeof_char == 1 else 'H'
         fmt = "<2" + fmt_chr
@@ -1100,15 +1101,15 @@ class StringBlock(object):
             return length1, sizeof_char
 
     def show(self):
-        print "StringBlock(%x, %x, %x, %x, %x, %x" % (
+        print ("StringBlock(%x, %x, %x, %x, %x, %x" % (
             self.start,
             self.header,
             self.header_size,
             self.chunkSize,
             self.stringsOffset,
-            self.flags)
+            self.flags))
         for i in range(0, len(self.m_stringOffsets)):
-            print i, repr(self.getString(i))
+            print(i, repr(self.getString(i)))
 
 
 ATTRIBUTE_IX_NAMESPACE_URI = 0
@@ -1206,7 +1207,7 @@ class AXMLParser(object):
                 if chunkSize < 8 or chunkSize % 4 != 0:
                     androconf.warning("Invalid chunk size")
 
-                for i in range(0, chunkSize / 4 - 2):
+                for i in range(0, int(chunkSize / 4 - 2)):
                     self.m_resourceIDs.append(
                         unpack('<L', self.buff.read(4))[0])
 
@@ -1502,7 +1503,7 @@ class AXMLPrinter(object):
                 )) + self.axml.getName() + u'\n'
                 self.buff += self.axml.getXMLNS()
 
-                for i in range(0, self.axml.getAttributeCount()):
+                for i in range(0, int(self.axml.getAttributeCount())):
                     self.buff += "%s%s=\"%s\"\n" % (
                         self.getPrefix(
                             self.axml.getAttributePrefix(i)),
